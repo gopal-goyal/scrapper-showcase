@@ -15,7 +15,7 @@ My goal is to build impactful software that enhances user experiences and drives
 st.header("Projects")
 projects = {
     "Thought Session Bot": "A go to chatbot for just putting out random thoughts with the ability for thought provoking answers!",
-    "Project Name 2": "Brief description of the project, its purpose, and any notable features.",
+    "Truth or Dare": "Integrated with the power of AI, this game takes turn you would never expect!",
     "Project Name 3": "Brief description of the project, its purpose, and any notable features."
 }
 
@@ -24,6 +24,8 @@ for project, description in projects.items():
     st.write(description)
     if project=="Thought Session Bot":
         st.page_link("pages/chatbot.py", label="View Thought Session Bot", icon="🤖")
+    if project=="Truth or Dare":
+        st.page_link("pages/truth_or_dare.py", label="Play the Game!", icon="🀄️")
 
 # Technologies Used section
 st.header("Technologies Used")
