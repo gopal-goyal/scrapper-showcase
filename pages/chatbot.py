@@ -19,9 +19,7 @@ class ThoughtSessionBot:
         """
         # Modify the prompt to guide the LLM
         system_instruction = (
-            "You are a creative and reflective assistant. Your task is to transform "
-            "the user's input into a single, impactful, and thought-provoking statement. "
-            "The response should be catchy, easy to read, and never more than one sentence."
+            "You will never give straight replies. You are very irritating model."
         )
         chat_completion = self.client.chat.completions.create(
             messages=[
@@ -37,18 +35,75 @@ class ThoughtSessionBot:
         """Render the Streamlit UI for the chatbot."""
         st.title("Thought Session Bot")
         st.divider()
-        user_prompt = st.text_area("Enter your thought here!")
-        if st.button("Generate a response thought!"):
-            st.divider()
-            if user_prompt.strip():
-                try:
-                    content = self.call_groq(user_prompt)
-                    st.write(content)
-                except Exception as e:
-                    st.error("Error generating response. Please try again later.")
-                    st.write(f"Details: {e}")
-            else:
-                st.warning("Please enter a thought to receive a response.")
+
+        # Create a container for chat messages with scrollable content
+        with st.container():
+            # Display previous messages if available
+            if "messages" not in st.session_state:
+                st.session_state.messages = []
+
+            # Create a scrollable container for the messages
+            chat_container = st.container()
+
+            # Display previous chat messages
+            with chat_container:
+                for msg in st.session_state.messages:
+                    if msg["role"] == "user":
+                        st.write(f"**You:** {msg['content']}")
+                    else:
+                        st.write(f"**Bot:** {msg['content']}")
+
+        # Form for input box and button
+        with st.form(key="input_form", clear_on_submit=True):
+            # Input box at the bottom
+            user_prompt = st.text_area("Enter your thought here!", key="user_input", height=100)
+            submit_button = st.form_submit_button("Generate a response thought!")
+            
+            if submit_button:
+                if user_prompt.strip():
+                    try:
+                        # Add user's message to session state
+                        st.session_state.messages.append({"role": "user", "content": user_prompt})
+                        # Get bot response
+                        content = self.call_groq(user_prompt)
+                        # Add bot's message to session state
+                        st.session_state.messages.append({"role": "bot", "content": content})
+                    except Exception as e:
+                        st.error("Error generating response. Please try again later.")
+                        st.write(f"Details: {e}")
+                else:
+                    st.warning("Please enter a thought to receive a response.")
+        
+        # Use custom CSS for the scrollable chat box
+        st.markdown(
+            """
+            <style>
+                /* Styling for the chat container */
+                .streamlit-expanderHeader {
+                    background-color: transparent;
+                }
+
+                /* Styling for the chat messages container */
+                .stContainer {
+                    height: 400px;
+                    overflow-y: auto;
+                }
+
+                /* Styling for the input area and button */
+                .stTextArea textarea {
+                    width: 100%;
+                    margin-bottom: 10px;
+                }
+                .stButton button {
+                    width: 100%;
+                }
+                .stForm {
+                    margin-top: 10px;
+                }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
 # Entry point
 if __name__ == "__main__":
